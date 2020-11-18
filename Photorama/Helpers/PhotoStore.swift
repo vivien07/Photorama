@@ -40,20 +40,11 @@ class PhotoStore {
     
     
     //create a URLRequest that connects to api.flickr.com and asks for the list of interesting photos.
-    func fetchPhotos(url: URL, completion: @escaping (Result<[Photo], Error>) -> Void) {
+    func fetchPhotos(completion: @escaping (Result<[Photo], Error>) -> Void) {
         
+        let url = FlickrAPI.interestingPhotosURL
         let request = URLRequest(url: url)
         let task = session.dataTask(with: request) { (data, response, error) in
-            
-            //            if let jsonData = data {
-            //                if let jsonString = String(data: jsonData, encoding: .utf8) {
-            //                    print(jsonString)
-            //                }
-            //            } else if let requestError = error {
-            //                print("Error fetching interesting photos: \(requestError)")
-            //            } else {
-            //                print("Unexpected error with the request")
-            //            }
             let result = self.processPhotosRequest(data: data, error: error)
             if let response = response as? HTTPURLResponse {
                 print("Status code: \(response.statusCode)")
@@ -62,7 +53,6 @@ class PhotoStore {
             DispatchQueue.main.async {
                 completion(result)  //closure that will be called once the web service request is completed
             }
-            
             
         }
         task.resume()   //start the web service request
