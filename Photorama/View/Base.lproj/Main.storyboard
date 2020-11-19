@@ -3,6 +3,7 @@
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="17126"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="collection view cell content view" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -33,7 +34,7 @@
                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="dnV-1R-i6u">
                                             <rect key="frame" x="0.0" y="0.0" width="90" height="90"/>
                                         </imageView>
-                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="tnh-iO-ncu">
+                                        <activityIndicatorView hidden="YES" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" style="large" translatesAutoresizingMaskIntoConstraints="NO" id="tnh-iO-ncu">
                                             <rect key="frame" x="26.5" y="26.5" width="37" height="37"/>
                                             <color key="color" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         </activityIndicatorView>
@@ -51,6 +52,7 @@
                                 <connections>
                                     <outlet property="imageView" destination="dnV-1R-i6u" id="IgR-85-SqX"/>
                                     <outlet property="spinner" destination="tnh-iO-ncu" id="5le-eL-54b"/>
+                                    <segue destination="JnT-vo-ONq" kind="show" identifier="showPhoto" id="l9Q-lG-mZ3"/>
                                 </connections>
                             </collectionViewCell>
                         </cells>
@@ -60,10 +62,43 @@
                         </connections>
                     </collectionView>
                     <navigationItem key="navigationItem" title="Photorama" id="hWd-Ll-W1Y"/>
+                    <connections>
+                        <outlet property="collectionView" destination="gy6-vQ-hV6" id="9SB-w1-Sna"/>
+                    </connections>
                 </collectionViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="djN-xc-aL9" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1155.072463768116" y="-43.526785714285715"/>
+        </scene>
+        <!--Photo Info View Controller-->
+        <scene sceneID="JC0-fc-FOz">
+            <objects>
+                <viewController id="JnT-vo-ONq" customClass="PhotoInfoViewController" customModule="Photorama" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="cds-NP-zWq">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="PwI-k1-rAg">
+                                <rect key="frame" x="0.0" y="88" width="414" height="774"/>
+                            </imageView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="XpL-MN-vvw"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="PwI-k1-rAg" firstAttribute="leading" secondItem="XpL-MN-vvw" secondAttribute="leading" id="Kdr-ZQ-JRL"/>
+                            <constraint firstItem="XpL-MN-vvw" firstAttribute="trailing" secondItem="PwI-k1-rAg" secondAttribute="trailing" id="QIV-4l-p6w"/>
+                            <constraint firstItem="PwI-k1-rAg" firstAttribute="top" secondItem="XpL-MN-vvw" secondAttribute="top" id="hJ7-Ia-Rmu"/>
+                            <constraint firstItem="XpL-MN-vvw" firstAttribute="bottom" secondItem="PwI-k1-rAg" secondAttribute="bottom" id="vWC-WS-q0I"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" id="lK1-RJ-D4O"/>
+                    <connections>
+                        <outlet property="imageView" destination="PwI-k1-rAg" id="gLR-3j-SEz"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="hsn-fW-iLr" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2297" y="-44"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="v2s-bE-263">

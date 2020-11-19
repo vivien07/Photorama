@@ -8,6 +8,7 @@ enum PhotoError: Error {
 //responsible for initiating the web service requests = fetching a list of interesting photos and downloading the image data for each photo.
 class PhotoStore {
     
+    private let imageStore = ImageStore()
     private let session: URLSession = {
         let config = URLSessionConfiguration.default
         return URLSession(configuration: config)
@@ -33,7 +34,6 @@ class PhotoStore {
                 return .failure(PhotoError.imageCreationError)
             }
         }
-        
         return .success(image)
         
     }
@@ -53,7 +53,6 @@ class PhotoStore {
             DispatchQueue.main.async {
                 completion(result)  //closure that will be called once the web service request is completed
             }
-            
         }
         task.resume()   //start the web service request
         
@@ -62,6 +61,14 @@ class PhotoStore {
     
     func fetchImage(for photo: Photo,  completion: @escaping (Result<UIImage, Error>) -> Void) {
         
+        //load the images from the cache
+        let photoKey = photo.photoID
+        if let image = imageStore.image(forKey: photoKey) {
+            OperationQueue.main.addOperation {
+                completion(.success(image))
+            }
+            return
+        }
         guard let photoURL = photo.remoteURL else {
             completion(.failure(PhotoError.missingImageURL))
             return
@@ -69,6 +76,10 @@ class PhotoStore {
         let request = URLRequest(url: photoURL)
         let task = session.dataTask(with: request) { (data, response, error) in
             let result = self.processImageRequest(data: data, error: error)
+            //when the image data is downloaded, it will be saved to the filesystem.
+            if case let .success(image) = result {
+                self.imageStore.setImage(image, forKey: photoKey)
+            }
             DispatchQueue.main.async {
                 completion(result)
             }

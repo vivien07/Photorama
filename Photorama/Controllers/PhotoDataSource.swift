@@ -21,6 +21,4 @@ class PhotoDataSource: NSObject, UICollectionViewDataSource {
     }
     
     
-    
-    
 }
