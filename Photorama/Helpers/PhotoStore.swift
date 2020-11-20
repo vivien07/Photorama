@@ -10,7 +10,7 @@ enum PhotoError: Error {
 class PhotoStore {
     
     private let imageStore = ImageStore()
-    private let persistentContainer: NSPersistentContainer = {
+    let persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Photorama")
         container.loadPersistentStores { (description, error) in
             if let err = error {
@@ -93,10 +93,6 @@ class PhotoStore {
                     result = .failure(error)
                 }
             }
-            if let response = response as? HTTPURLResponse {
-                print("Status code: \(response.statusCode)")
-                print("Header fields: \(response.allHeaderFields)")
-            }
             DispatchQueue.main.async {
                 completion(result)  //closure that will be called once the web service request is completed
             }
@@ -149,6 +145,25 @@ class PhotoStore {
             do {
                 let allPhotos = try viewContext.fetch(fetchRequest)
                 completion(.success(allPhotos))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        
+    }
+    
+    
+    func fetchAllTags(completion: @escaping (Result<[Tag], Error>) -> Void) {
+        
+        let fetchRequest: NSFetchRequest<Tag> = Tag.fetchRequest()
+        let sortByName = NSSortDescriptor(key: #keyPath(Tag.name), ascending: true)
+        fetchRequest.sortDescriptors = [sortByName]
+
+        let viewContext = persistentContainer.viewContext
+        viewContext.perform {
+            do {
+                let allTags = try fetchRequest.execute()
+                completion(.success(allTags))
             } catch {
                 completion(.failure(error))
             }
