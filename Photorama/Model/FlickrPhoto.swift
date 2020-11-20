@@ -1,19 +1,19 @@
 import Foundation
 
 
-class Photo: Codable {
+class FlickrPhoto: Codable {
     
     //all properties are codable
+    let photoID: String
     let title: String
     let remoteURL: URL? //not every photo will have that key
-    let photoID: String
     let dateTaken: Date
     
     
-    init(title: String, remoteURL: URL, id: String, dateTaken: Date) {
+    init(id: String, title: String, remoteURL: URL,  dateTaken: Date) {
+        photoID = id
         self.title = title
         self.remoteURL = remoteURL
-        photoID = id
         self.dateTaken = dateTaken
     }
     
@@ -28,11 +28,11 @@ class Photo: Codable {
 }
 
 
-extension Photo: Equatable {
+extension FlickrPhoto: Equatable {
     
     
     //Two Photos are the same if they have the same photoID
-    static func == (lhs: Photo, rhs: Photo) -> Bool {
+    static func == (lhs: FlickrPhoto, rhs: FlickrPhoto) -> Bool {
         return (lhs.photoID == rhs.photoID)
     }
     

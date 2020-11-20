@@ -1,4 +1,5 @@
 import UIKit
+import CoreData
 
 enum PhotoError: Error {
     case imageCreationError
@@ -9,6 +10,16 @@ enum PhotoError: Error {
 class PhotoStore {
     
     private let imageStore = ImageStore()
+    private let persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "Photorama")
+        container.loadPersistentStores { (description, error) in
+            if let err = error {
+                print("Error setting up Core Data (\(err)).")
+            }
+            print(description)
+        }
+        return container
+    }()
     private let session: URLSession = {
         let config = URLSessionConfiguration.default
         return URLSession(configuration: config)
@@ -20,7 +31,35 @@ class PhotoStore {
         guard let jsonData = data else {
             return .failure(error!)
         }
-        return FlickrAPI.photos(fromJSON: jsonData)
+        let context = persistentContainer.viewContext
+        
+        switch FlickrAPI.photos(fromJSON: jsonData) {
+        case let .success(flickrPhotos):
+            let photos = flickrPhotos.map { flickrPhoto -> Photo in
+                let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+                let predicate = NSPredicate( format: "\(#keyPath(Photo.photoID)) == \(flickrPhoto.photoID)")
+                fetchRequest.predicate = predicate
+                var fetchedPhotos: [Photo]?
+                context.performAndWait {
+                    fetchedPhotos = try? fetchRequest.execute()
+                }
+                if let existingPhoto = fetchedPhotos?.first {
+                    return existingPhoto
+                }
+                var photo: Photo!
+                context.performAndWait {
+                    photo = Photo(context: context)
+                    photo.title = flickrPhoto.title
+                    photo.photoID = flickrPhoto.photoID
+                    photo.remoteURL = flickrPhoto.remoteURL
+                    photo.dateTaken = flickrPhoto.dateTaken
+                }
+                return photo
+            }
+            return .success(photos)
+        case let .failure(error):
+            return .failure(error)
+        }
         
     }
     
@@ -45,7 +84,15 @@ class PhotoStore {
         let url = FlickrAPI.interestingPhotosURL
         let request = URLRequest(url: url)
         let task = session.dataTask(with: request) { (data, response, error) in
-            let result = self.processPhotosRequest(data: data, error: error)
+            var result = self.processPhotosRequest(data: data, error: error)
+            //save the changes to the context
+            if case .success = result {
+                do {
+                    try self.persistentContainer.viewContext.save()
+                } catch {
+                    result = .failure(error)
+                }
+            }
             if let response = response as? HTTPURLResponse {
                 print("Status code: \(response.statusCode)")
                 print("Header fields: \(response.allHeaderFields)")
@@ -62,7 +109,9 @@ class PhotoStore {
     func fetchImage(for photo: Photo,  completion: @escaping (Result<UIImage, Error>) -> Void) {
         
         //load the images from the cache
-        let photoKey = photo.photoID
+        guard let photoKey = photo.photoID else {
+            preconditionFailure("Photo expected to have an ID.")
+        }
         if let image = imageStore.image(forKey: photoKey) {
             OperationQueue.main.addOperation {
                 completion(.success(image))
@@ -88,6 +137,24 @@ class PhotoStore {
         
     }
     
+    
+    func fetchAllPhotos(completion: @escaping (Result<[Photo], Error>) -> Void) {
+        
+        let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
+        let sortByDateTaken = NSSortDescriptor(key: #keyPath(Photo.dateTaken), ascending: true)
+        fetchRequest.sortDescriptors = [sortByDateTaken]
+        
+        let viewContext = persistentContainer.viewContext
+        viewContext.perform {
+            do {
+                let allPhotos = try viewContext.fetch(fetchRequest)
+                completion(.success(allPhotos))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        
+    }
     
     
     
